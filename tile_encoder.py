@@ -8,7 +8,7 @@ import jax.numpy as jnp
 
 class Bandit:
     """
-    Imitating multi-armed bandit with 3-dimentional input and simple quadratic reward with normal noise
+    Imitating a multi-armed bandit with 3-dimentional input and simple quadratic reward with normal noise
     """
     def __init__(self, offsets: Sequence = (5,4,8), std: int = 5):
         self.reward_fn = lambda x: sum(-.5*(x_i-offset_i)**2 for x_i, offset_i in zip(x, offsets))
@@ -20,7 +20,7 @@ class Bandit:
 
 def encode(x, offsets, l, r, widths, num_tile_layers):
     """
-    encode multidimentional input with tile encoding 
+    Encodes multidimentional input with tile encoding 
     """
     x = jnp.tile(x, (num_tile_layers,1))
     offsets = jnp.tile(offsets, (num_tile_layers,1)) * jnp.arange(num_tile_layers).reshape(-1,1)
@@ -30,7 +30,7 @@ def encode(x, offsets, l, r, widths, num_tile_layers):
 @jax.jit
 def calculate_expectation_and_n(encoded_x, w, N):
     """
-    Calculate expected reward and number N for UCB using weights (w, N)
+    Calculates expected reward and number N for UCB using weights (w, N)
     """
     value = 0
     n = 0
@@ -57,9 +57,10 @@ def select_top_n(scores, n, grid):
 
 class TileEncoder:
     """
-    Class that encodes miltidimentional input feature x using tile encoding* and learns 
+    Class that encodes a miltidimentional input feature x using tile encoding* and learns 
     weights of the tiles using output from Multi-Armed-Bandit simulator or
-    from more complex non-stationary MAB, as used in GDI paper **, using UCB ***
+    from more complex non-stationary MAB, as was in GDI paper **. Scroes given to 
+    actions using UCB ***
     
     * - for more information check (Stutton, Barto, Reinforcement Learning: An Introduction, page 236)
     ** - Generalized Policy Iteration https://arxiv.org/abs/2106.06232
@@ -128,12 +129,12 @@ class TileEncoder:
     def get_scores(self):
         """
         Get scores of all possible combinations of features in input x = (z_i, y_j, q_k, ...)
-        sorted in order itertools.product(z_list, y_list, q_list)
+        sorted in order itertools.product(z, y, q, ...)
         """
         return self.get_scores_fn(w=self.w, N=self.N)
 
     def get_n_actions(self):
         """
-        returns top n actions x based on scores that get_scores method returns
+        Returns top n actions x based on scores that get_scores method returns
         """
         return self.select_fn(self.get_scores_fn(w=self.w, N=self.N))
